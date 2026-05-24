@@ -96,7 +96,7 @@ export default function TestToolsPage() {
 
   const handleTestConcurrency = async () => {
     setIsLoading((prev) => ({ ...prev, concurrency: true }));
-    addLog("info", "Concurrency Test Start", "Triggering 10 leads simultaneously on backend...");
+    addLog("info", "Concurrency Test Start", "Triggering 10 leads simultaneously on server...");
 
     try {
       const response = await api.post("/test/generate-leads");

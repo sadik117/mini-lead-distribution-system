@@ -36,17 +36,17 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     if (get().eventSource) return;
 
     const sseUrl = process.env.NEXT_PUBLIC_SSE_URL || "http://localhost:5000/api/events";
-    console.log(`[SSE] Connecting to ${sseUrl}...`);
+    // console.log(`[SSE] Connecting to ${sseUrl}...`);
     const source = new EventSource(sseUrl);
 
     source.addEventListener("connected", (event) => {
-      console.log("[SSE] Connected:", JSON.parse(event.data));
+      // console.log("[SSE] Connected:", JSON.parse(event.data));
     });
 
     source.addEventListener("dashboard_update", (event) => {
       try {
         const data = JSON.parse(event.data);
-        console.log("[SSE] Dashboard update received:", data);
+        // console.log("[SSE] Dashboard update received:", data);
         if (data.providers) {
           // Normalize providers to add remainingQuota
           const normalized = data.providers.map((p: any) => ({
@@ -61,7 +61,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     });
 
     source.onerror = (err) => {
-      console.error("[SSE] EventSource failed:", err);
+      // console.error("[SSE] EventSource failed:", err);
     };
 
     set({ eventSource: source });
@@ -70,7 +70,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   disconnectSSE: () => {
     const source = get().eventSource;
     if (source) {
-      console.log("[SSE] Disconnecting event source...");
+      // console.log("[SSE] Disconnecting event source...");
       source.close();
       set({ eventSource: null });
     }

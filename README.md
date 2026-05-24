@@ -13,8 +13,8 @@ A robust, high-performance, and concurrency-safe full-stack lead distribution sy
 - **Server-Sent Events (SSE)** for lightweight, low-overhead real-time broadcasts
 
 ### Frontend
-- **Next.js 14** (App Router) with **TypeScript**
-- **Tailwind CSS v4** for clean utility-first responsive styling
+- **Next.js** (App Router) with **TypeScript**
+- **Tailwind CSS** for clean utility-first responsive styling
 - **Zustand** for global client state and real-time SSE stream management
 - **Lucide React** for UI icons
 
