@@ -42,6 +42,19 @@ export async function allocateProviders(
     const mandatoryNames = MANDATORY_PROVIDERS[serviceId] || [];
     const fairPoolNames = FAIR_POOL[serviceId] || [];
 
+    // Pre-lock all potentially needed providers in strictly ascending ID order 
+    // to prevent deadlocks between concurrent allocations across different services.
+    const allProviderNames = Array.from(new Set([...mandatoryNames, ...fairPoolNames]));
+    if (allProviderNames.length > 0) {
+      await tx.$queryRaw`
+        SELECT id
+        FROM "Provider"
+        WHERE name = ANY(${allProviderNames}::text[])
+        ORDER BY id ASC
+        FOR UPDATE
+      `;
+    }
+
     const mandatoryProviders = await tx.$queryRaw<
       { id: number; name: string; "leadsReceivedThisMonth": number; "monthlyQuota": number }[]
     >`
@@ -107,27 +120,30 @@ export async function allocateProviders(
     }
 
     const now = new Date();
-    for (const providerId of assignedIds) {
-      await tx.leadAssignment.create({
-        data: {
+    if (assignedIds.size > 0) {
+      await tx.leadAssignment.createMany({
+        data: Array.from(assignedIds).map((providerId) => ({
           leadId,
           providerId,
           assignedAt: now,
-        },
+        })),
       });
     }
 
-    await tx.$executeRaw`
-      UPDATE "Provider"
-      SET "leadsReceivedThisMonth" = "leadsReceivedThisMonth" + 1
-      WHERE id = ANY(${Array.from(assignedIds)}::int[])
-    `;
+    if (assignedIds.size > 0) {
+      await tx.provider.updateMany({
+        where: { id: { in: Array.from(assignedIds) } },
+        data: { leadsReceivedThisMonth: { increment: 1 } },
+      });
+    }
 
-    await tx.$executeRaw`
-      UPDATE "AllocationState"
-      SET pointer = ${pointer}
-      WHERE id = ${state.id}
-    `;
+    await tx.allocationState.update({
+      where: { id: state.id },
+      data: { pointer },
+    });
+  }, {
+    maxWait: 20000,
+    timeout: 40000, 
   });
 
   const providers = await prisma.provider.findMany({

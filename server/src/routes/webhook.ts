@@ -24,35 +24,36 @@ router.post(
 
       let alreadyProcessed = false;
 
-      await prisma.$transaction(async (tx:any) => {
-        // Checked if webhook event was already processed
-        const existing = await tx.webhookEvent.findUnique({
-          where: { id: idempotencyKey },
-        });
+      try {
+        await prisma.$transaction(async (tx:any) => {
+          // Record this event FIRST (before processing) to prevent duplicate execution
+          // If another concurrent request already created it, this will throw a P2002 error
+          await tx.webhookEvent.create({
+            data: {
+              id: idempotencyKey,
+              type: "quota_reset",
+            },
+          });
 
-        if (existing) {
-          // Already processed — mark flag and exit transaction without changes
+          // Reset all providers: quota back to 10, count back to 0
+          await tx.provider.updateMany({
+            data: {
+              monthlyQuota: 10,
+              leadsReceivedThisMonth: 0,
+            },
+          });
+        }, {
+          maxWait: 10000,
+          timeout: 20000, 
+        });
+      } catch (err: any) {
+        // P2002 is Prisma's unique constraint violation code
+        if (err.code === "P2002") {
           alreadyProcessed = true;
-          return;
+        } else {
+          throw err;
         }
-
-        // Record this event FIRST (before processing) to prevent duplicate execution
-        // even if the server crashes mid-reset
-        await tx.webhookEvent.create({
-          data: {
-            id: idempotencyKey,
-            type: "quota_reset",
-          },
-        });
-
-        // Reset all providers: quota back to 10, count back to 0
-        await tx.provider.updateMany({
-          data: {
-            monthlyQuota: 10,
-            leadsReceivedThisMonth: 0,
-          },
-        });
-      });
+      }
 
       if (alreadyProcessed) {
         res.status(200).json({
