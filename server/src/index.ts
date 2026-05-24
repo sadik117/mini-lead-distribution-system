@@ -6,6 +6,7 @@ import leadsRouter from "./routes/leads";
 import providersRouter from "./routes/providers";
 import webhookRouter from "./routes/webhook";
 import sseRouter from "./routes/sse";
+import testRouter from "./routes/test";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -30,6 +31,7 @@ app.use("/api/leads", leadsRouter);
 app.use("/api/providers", providersRouter); 
 app.use("/api/webhook", webhookRouter);   
 app.use("/api/events", sseRouter);       
+app.use("/api/test", testRouter);
 
 // Global Error Handler
 app.use(errorHandler);
