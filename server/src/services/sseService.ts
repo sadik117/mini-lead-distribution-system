@@ -11,7 +11,7 @@ const clients = new Set<Response>();
  */
 export function addClient(res: Response): void {
   clients.add(res);
-  console.log(`SSE client connected. Total: ${clients.size}`);
+  // console.log(`SSE client connected. Total: ${clients.size}`);
 }
 
 
@@ -19,7 +19,7 @@ export function addClient(res: Response): void {
  
 export function removeClient(res: Response): void {
   clients.delete(res);
-  console.log(`SSE client disconnected. Total: ${clients.size}`);
+  // console.log(`SSE client disconnected. Total: ${clients.size}`);
 }
 
 export function broadcast(eventName: string, payload: unknown): void {

@@ -159,7 +159,7 @@ export async function allocateProviders(
   });
 
   broadcast("dashboard_update", { providers });
-  console.log(`Lead ${leadId} assigned to: ${assignedNames.join(", ")}`);
+  // console.log(`Lead ${leadId} assigned to: ${assignedNames.join(", ")}`);
 
   return assignedNames;
 }

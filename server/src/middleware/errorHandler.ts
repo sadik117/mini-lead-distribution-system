@@ -1,8 +1,3 @@
-// src/middleware/errorHandler.ts
-// Global Express error handler.
-// Must be registered as the LAST middleware in index.ts (after all routes).
-// Catches any error thrown with `next(error)` or via async route wrappers.
-
 import { Request, Response, NextFunction } from "express";
 
 // Extend Error to optionally carry an HTTP status code
@@ -17,7 +12,7 @@ export function errorHandler(
   res: Response,
   _next: NextFunction
 ): void {
-  console.error("❌ Error:", err.message, err.stack);
+  console.error("Error:", err.message, err.stack);
 
   // Prisma unique constraint violation → 409 Conflict
   // P2002 is Prisma's error code for unique constraint failures.
@@ -32,7 +27,7 @@ export function errorHandler(
     return;
   }
 
-  // Use the error's own statusCode if set, otherwise default to 500
+  // error's own statusCode if set, otherwise default to 500
   const status = err.statusCode || 500;
   res.status(status).json({
     error: err.message || "Internal Server Error",

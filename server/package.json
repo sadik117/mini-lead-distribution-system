@@ -2,15 +2,16 @@
   "name": "server",
   "version": "1.0.0",
   "description": "Prowider Mini Lead Distribution System - Express API",
-  "main": "dist/index.js",
+  "main": "api/index.mjs",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js",
+    "build": "prisma generate && tsup src/index.ts --format esm --platform node --target node25 --outDir api --external pg-native",
+    "start": "node api/index.mjs",
     "db:migrate": "prisma migrate dev",
     "db:seed": "ts-node src/prisma/seed.ts",
     "db:generate": "prisma generate",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "vercel-build": "prisma generate"
   },
   "keywords": [],
   "author": "",
@@ -23,6 +24,7 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "tsup": "^8.5.1",
     "uuid": "^14.0.0",
     "zod": "^4.4.3"
   },
